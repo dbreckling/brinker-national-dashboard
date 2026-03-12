@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DLVE × Brinker International</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root{
+  --bg:#05070d;
+  --panel:#0a0f1a;
+  --panel2:#0b1120;
+  --panel3:#0c1324;
+  --stroke:#1c2640;
+  --stroke2:#23304f;
+  --text:#e9edf4;
+  --muted:#a9b3c7;
+  --muted2:#7c879f;
+  --pill:#0c1324;
+  --pillStroke:#23304f;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --radius:14px;
+  --radius2:12px;
+  --pink:#fb5ca8;
+  --yellow:#ffd46a;
+  --ph:#ffd34a;
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.app{
+  height:100vh;
+  display:grid;
+  grid-template-columns: 360px 1fr;
+}
+
+/* LEFT: workspace */
+.left{
+  background:linear-gradient(180deg, rgba(12,18,33,.92), rgba(7,10,18,.96));
+  border-right:1px solid rgba(35,48,79,.7);
+  padding:14px 14px 12px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 4px 2px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.badge{
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  background:#0e162b;
+  border:1px solid rgba(35,48,79,.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:700;
+  font-size:12px;
+}
+
+.titleWrap{ min-width:0; }
+.title{
+  font-size:13px;
+  font-weight:650;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sub{
+  font-size:11px;
+  color:var(--muted2);
+  margin-top:2px;
+}
+
+.topActions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.iconBtn{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.9);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+
+.topActions .iconBtn{ font-size:16px; }
+.topActions .iconBtn.refreshBtn{ font-size:20px; }
+
+.iconBtn:hover{ border-color:rgba(72,94,150,.9); }
+.hasTip{ position:relative; }
+.tipCard{
+  position:absolute;
+  top:calc(100% + 10px);
+  right:0;
+  width:260px;
+  padding:12px 12px 10px;
+  border-radius:12px;
+  border:1px solid rgba(120,150,255,.25);
+  background:linear-gradient(180deg, rgba(18,24,42,.98), rgba(10,14,26,.98));
+  color:#e6ecff;
+  font-size:11px;
+  line-height:1.45;
+  box-shadow:0 12px 26px rgba(4,8,18,.5);
+  opacity:0;
+  transform:translateY(-4px);
+  pointer-events:none;
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:3000;
+  text-align:left;
+}
+.tipTitle{ font-weight:700; font-size:12px; letter-spacing:.2px; }
+.tipIcon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:16px;
+  margin-right:6px;
+  font-size:14px;
+}
+.tipIcon.tipIconBig{ font-size:18px; }
+.tipLead{ margin-top:6px; color:var(--muted2); }
+.tipList{ margin:6px 0 0 16px; padding:0; }
+.tipList li{ margin:2px 0; }
+.tipDivider{ margin:8px 0; height:1px; background:rgba(35,48,79,.7); }
+.tipQuote{ margin-top:6px; color:#dfe7ff; font-style:italic; }
+.tipNote{ margin-top:6px; color:var(--muted2); font-weight:600; }
+.hasTip:hover .tipCard,
+.hasTip:focus-visible .tipCard{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+.toolrow{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:4px 4px 8px;
+  justify-content:center;
+}
+
+.tool{
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.9);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.tool.toolBig{ font-size:18px; }
+.tool.toolXL{ font-size:26px; }
+.toolrow .tipCard{
+  top:calc(100% + 10px);
+  left:calc(100% + 10px);
+  right:auto;
+  transform:translateY(0);
+}
+.toolrow .hasTip:hover .tipCard,
+.toolrow .hasTip:focus-visible .tipCard{
+  transform:translateY(0);
+}
+.tool.active{ outline:2px solid rgba(120,150,255,.25); }
+
+.split{
+  height:1px;
+  background:rgba(35,48,79,.55);
+  margin:2px 0 0;
+}
+
+.section{
+  background:rgba(10,15,26,.72);
+  border:1px solid rgba(35,48,79,.75);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+
+.sectionHeader{
+  padding:12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.sectionHeader .h{
+  font-size:12px;
+  font-weight:700;
+  color:var(--muted);
+  letter-spacing:.02em;
+}
+
+.btnPrimary{
+  padding:8px 10px;
+  border-radius:11px;
+  background:rgba(18,28,52,.95);
+  border:1px solid rgba(80,110,190,.6);
+  color:#dfe7ff;
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+}
+
+.btnPrimary:hover{ border-color:rgba(120,150,255,.9); }
+
+.datasetList{
+  padding:10px 8px 10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.dataset{
+  padding:10px 10px;
+  border-radius:12px;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.75);
+  display:grid;
+  grid-template-columns: 4px 1fr auto;
+  gap:10px;
+  align-items:center;
+}
+
+.dataset .bar{ width:3px; height:100%; border-radius:999px; background:rgba(120,150,255,.55); }
+.dataset .name{ font-size:13px; font-weight:650; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dataset .meta{ font-size:11px; color:var(--muted2); margin-top:2px; }
+.dataset .actions{ display:flex; align-items:center; gap:6px; }
+.dataset{ grid-template-columns: 4px 1fr 86px; }
+.layerRow{ grid-template-columns: 4px 1fr 86px; }
+.dataset .actions,
+.layerRow .actions{ justify-self:end; }
+.dataset .kebab{
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  border:1px solid rgba(35,48,79,.75);
+  background:rgba(10,15,26,.65);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color:#dfe7ff;
+  font-size:18px;
+  line-height:1;
+}
+.datasetChildren{ display:none; margin-top:8px; padding-left:10px; }
+.dataset.open .datasetChildren{ display:flex; flex-direction:column; gap:10px; }
+.dataset.open .kebab{ border-color:rgba(120,150,255,.7); }
+.datasetChildren{ grid-column:1 / -1; padding-left:0; }
+.datasetChildren .layerRow{ width:100%; }
+.datasetChildren .layerRow{
+  background:transparent;
+  border:none;
+  padding:6px 10px;
+  grid-template-columns:4px 1fr auto;
+}
+.datasetChildren .layerRow .actions{
+  justify-self:end;
+}
+
+.search{
+  padding:10px;
+}
+
+.search input{
+  width:100%;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.8);
+  border-radius:12px;
+  padding:12px 12px;
+  color:var(--text);
+  font-size:13px;
+  outline:none;
+}
+
+.layerList{ padding:10px 0 0; display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+
+.layerRow{
+  padding:10px 10px;
+  border-radius:12px;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.75);
+  display:grid;
+  grid-template-columns: 4px 1fr auto;
+  gap:10px;
+  align-items:center;
+}
+
+.dot{ width:3px; height:100%; border-radius:999px; display:block; }
+
+.lname{ font-size:13px; font-weight:650; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lsub{ font-size:11px; color:var(--muted2); margin-top:2px; }
+
+.actions{ display:flex; gap:8px; }
+
+.eyeBtn svg{ width:16px; height:16px; fill:#fff; opacity:.9; }
+.eyeBtn.off svg{ fill:#94a3b8; opacity:.7; }
+
+.moreBtn::before{
+  content:"";
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:-6px 0 0 #fff, 6px 0 0 #fff;
+  display:block;
+}
+
+/* MAP AREA */
+.mapWrap{ position:relative; }
+#map{ width:100%; height:100%; filter:brightness(.82) contrast(1.05); }
+
+.kpiStrip{
+  position:absolute;
+  top:14px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:720;
+  position:relative;
+  display:grid;
+  grid-template-columns: repeat(7, minmax(86px, 1fr));
+  gap:8px;
+  padding:8px 10px;
+  background:rgba(12,19,36,.85);
+  border:1px solid rgba(35,48,79,.85);
+  border-radius:14px;
+  box-shadow: var(--shadow);
+}
+.kpi{
+  padding:6px 8px;
+  border-radius:10px;
+  border:1px solid rgba(35,48,79,.65);
+  background:rgba(10,15,26,.5);
+  min-width:0;
+}
+.kpiLabel{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:var(--muted2);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.kpiValue{
+  margin-top:4px;
+  font-size:13px;
+  font-weight:700;
+  color:#e6ecff;
+}
+.kpiSub{
+  margin-top:2px;
+  font-size:10px;
+  color:var(--muted2);
+}
+.kpiDelta.up{ color:#7fe2a8; font-weight:700; }
+.kpiDelta.down{ color:#ff9aa3; font-weight:700; }
+
+.kpiDrawer{
+  position:absolute;
+  left:50%;
+  bottom:-28px;
+  transform:translateX(-50%);
+  z-index:710;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+.drawerToggle{
+  border:1px solid rgba(35,48,79,.85);
+  background:rgba(12,19,36,.9);
+  color:#e6ecff;
+  border-radius:999px;
+  padding:6px 12px;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.drawerChevron{ font-size:12px; opacity:.8; transition:transform .15s ease; }
+.drawerContent{
+  display:none;
+  gap:8px;
+  position:absolute;
+  top:calc(100% + 6px);
+  left:50%;
+  transform:translateX(-50%);
+  padding:8px 10px;
+  background:rgba(12,19,36,.9);
+  border:1px solid rgba(35,48,79,.85);
+  border-radius:14px;
+  box-shadow: var(--shadow);
+}
+.kpiDrawer.open .drawerContent{ display:flex; }
+.kpiDrawer.open .drawerChevron{ transform:rotate(180deg); }
+
+.pillSelect{
+  background:rgba(9,16,27,.9);
+  border:1px solid rgba(35,48,79,.85);
+  color:var(--text);
+  border-radius:12px;
+  padding:6px 10px;
+  font-size:12px;
+  outline:none;
+}
+
+/* RIGHT legend panel */
+.legend{
+  position:absolute;
+  right:18px;
+  top:110px;
+  width:270px;
+  z-index:650;
+  background:rgba(12,19,36,.82);
+  border:1px solid rgba(35,48,79,.85);
+  border-radius:14px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+
+.legendHeader{
+  padding:12px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.legendHeader .h{ font-size:12px; font-weight:750; color:var(--muted); }
+
+.legendList{ padding:10px 10px 12px; display:flex; flex-direction:column; gap:10px; }
+
+.legendRow{
+  padding:10px 10px;
+  border-radius:12px;
+  border:1px solid rgba(35,48,79,.75);
+  background:rgba(10,15,26,.65);
+  display:grid;
+  grid-template-columns: 14px 1fr auto;
+  gap:10px;
+  align-items:center;
+}
+
+.legendRow .label{ font-size:13px; font-weight:650; }
+
+.toggle{
+  width:34px;
+  height:20px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(35,48,79,.85);
+  position:relative;
+  cursor:pointer;
+}
+
+.toggle::after{
+  content:"";
+  width:16px;
+  height:16px;
+  border-radius:999px;
+  background:#fff;
+  position:absolute;
+  left:2px;
+  top:1px;
+  transition:transform .18s ease;
+}
+
+.toggle.on{ background:rgba(120,150,255,.22); }
+.toggle.on::after{ transform:translateX(14px); }
+
+/* Alerts bottom-right */
+.alertTray{ position:absolute; right:18px; bottom:18px; z-index:800; display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+.alertTab{ position:relative; background:#fff; color:#0f172a; border-radius:12px; padding:12px 20px; font-size:12px; font-weight:750; cursor:pointer; box-shadow: var(--shadow); min-width:92px; text-align:center; }
+.alertPill{
+  position:absolute;
+  top:-8px;
+  left:-8px;
+  width:28px;
+  height:22px;
+  border-radius:999px;
+  background:#ff4d4f;
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #fff;
+  box-shadow: var(--shadow);
+}
+.alertPanel{ width:320px; background:#fff; color:#0f172a; border-radius:16px; padding:14px; box-shadow: var(--shadow); display:none; }
+.alertPanel.open{ display:block; }
+.alertTitle{ font-size:13px; font-weight:800; margin-bottom:10px; }
+.alertCard{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:10px 12px;
+  margin-bottom:8px;
+  font-size:13px;
+  display:grid;
+  grid-template-columns:4px 1fr;
+  gap:10px;
+  align-items:start;
+}
+.alertCard::before{
+  content:"";
+  width:4px;
+  height:100%;
+  border-radius:999px;
+  background:#ff4d4f;
+  display:block;
+}
+.alertCard.warn::before{ background:#f59e0b; }
+.alertCard.ok::before{ background:#22c55e; }
+.alertSub{ font-size:11px; color:#64748b; margin-top:4px; }
+
+/* Add Layer modal */
+.modalBackdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.55);
+  display:none; align-items:flex-start; justify-content:center;
+  padding-top:70px; z-index:2000;
+}
+.modalBackdrop.open{ display:flex; }
+
+.modal{
+  width:920px; max-width:calc(100vw - 32px);
+  background:linear-gradient(180deg, rgba(12,19,36,.96), rgba(8,11,20,.96));
+  border:1px solid rgba(35,48,79,.9);
+  border-radius:18px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+
+.modalTop{
+  padding:14px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid rgba(35,48,79,.7);
+}
+
+.modalTop .mt{ font-size:13px; font-weight:800; color:#dfe7ff; }
+
+.modalBody{
+  display:grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap:0;
+}
+
+.catalog{
+  padding:14px;
+  border-right:1px solid rgba(35,48,79,.55);
+}
+
+.catalogSearch{
+  display:flex; gap:10px;
+}
+
+.catalogSearch input{
+  flex:1;
+  background:rgba(9,16,27,.95);
+  border:1px solid rgba(35,48,79,.85);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  outline:none;
+}
+
+.tabs{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.tab{ padding:8px 10px; border-radius:999px; border:1px solid rgba(35,48,79,.75); background:rgba(10,15,26,.55); color:var(--muted); font-size:12px; cursor:pointer; }
+.tab.active{ border-color:rgba(120,150,255,.9); color:#dfe7ff; }
+
+.cardGrid{ margin-top:12px; display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+
+.card{
+  border:1px solid rgba(35,48,79,.8);
+  background:rgba(10,15,26,.6);
+  border-radius:14px;
+  padding:12px;
+  cursor:pointer;
+}
+
+.card:hover{ border-color:rgba(120,150,255,.9); }
+.card .ct{ font-size:13px; font-weight:800; }
+.card .cd{ margin-top:4px; font-size:11px; color:var(--muted2); line-height:1.35; }
+.card .tag{ display:inline-block; margin-top:10px; font-size:11px; color:#dfe7ff; border:1px solid rgba(120,150,255,.35); background:rgba(120,150,255,.12); padding:4px 8px; border-radius:999px; }
+
+.config{
+  padding:14px;
+}
+
+.cfgTitle{ font-size:13px; font-weight:800; }
+.cfgHelp{ margin-top:6px; font-size:11px; color:var(--muted2); line-height:1.45; }
+
+.form{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+}
+
+.field{ flex:1; }
+.field label{ display:block; font-size:11px; color:var(--muted2); margin:0 0 6px; }
+.field input, .field select{
+  width:100%;
+  background:rgba(9,16,27,.95);
+  border:1px solid rgba(35,48,79,.85);
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  outline:none;
+  font-size:12px;
+}
+
+.modalBottom{
+  padding:12px 14px;
+  border-top:1px solid rgba(35,48,79,.7);
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+.btnGhost{ padding:9px 12px; border-radius:12px; border:1px solid rgba(35,48,79,.85); background:rgba(10,15,26,.45); color:var(--muted); cursor:pointer; font-weight:700; font-size:12px; }
+.btnGhost:hover{ border-color:rgba(120,150,255,.7); color:#dfe7ff; }
+
+.btnAdd{ padding:9px 12px; border-radius:12px; border:1px solid rgba(120,150,255,.9); background:rgba(120,150,255,.18); color:#dfe7ff; cursor:pointer; font-weight:800; font-size:12px; }
+
+/* Ask Your Data (Chat) drawer */
+.chat{
+  position:absolute;
+  left:18px;
+  bottom:18px;
+  width:360px;
+  z-index:900;
+  border-radius:16px;
+  background:rgba(12,19,36,.82);
+  border:1px solid rgba(35,48,79,.85);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+
+.chatHeader{
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(35,48,79,.6);
+}
+
+.chatHeader .h{ font-size:12px; font-weight:850; color:#dfe7ff; }
+.chatHeader .mode{ font-size:11px; color:var(--muted2); }
+
+.chatBody{ padding:10px 12px; height:150px; overflow:auto; }
+.bubble{ padding:10px 10px; border-radius:14px; border:1px solid rgba(35,48,79,.75); background:rgba(10,15,26,.55); margin-bottom:10px; font-size:12px; line-height:1.45; }
+.bubble strong{ font-weight:850; }
+
+.chatInput{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid rgba(35,48,79,.6); }
+.chatInput input{ flex:1; background:rgba(9,16,27,.95); border:1px solid rgba(35,48,79,.85); color:var(--text); border-radius:12px; padding:10px 12px; outline:none; font-size:12px; }
+.chatInput button{ padding:10px 12px; border-radius:12px; border:1px solid rgba(120,150,255,.9); background:rgba(120,150,255,.18); color:#dfe7ff; cursor:pointer; font-weight:850; font-size:12px; }
+
+/* Brand selector */
+.brandSelector{
+  display:flex;
+  gap:6px;
+  padding:0 4px;
+}
+.brandBtn{
+  flex:1;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid rgba(35,48,79,.9);
+  background:rgba(12,19,36,.9);
+  color:var(--muted2);
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+  text-align:center;
+  transition: all .15s ease;
+}
+.brandBtn:hover{ border-color:rgba(72,94,150,.9); color:var(--text); }
+.brandBtn.active{
+  border-color:rgba(120,150,255,.9);
+  background:rgba(120,150,255,.15);
+  color:#dfe7ff;
+}
+.brandBtn .brandDot{
+  display:inline-block;
+  width:8px; height:8px;
+  border-radius:50%;
+  margin-right:6px;
+  vertical-align:middle;
+}
+
+/* Leaflet tweaks */
+.leaflet-control-attribution{ display:none !important; }
+.leaflet-container{ background:#05070d; }
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- LEFT PANEL -->
+  <aside class="left">
+
+    <div class="topbar">
+      <div class="brand">
+        <div class="badge">BI</div>
+        <div class="titleWrap">
+          <div class="title">Brinker International (DLVE)</div>
+          <div class="sub">Workspace · National Overview</div>
+        </div>
+      </div>
+      <div class="topActions">
+        <button class="iconBtn hasTip refreshBtn" aria-label="Refresh / Re-run">
+          ⟲
+          <span class="tipCard">
+            <div class="tipTitle">Refresh / Re-run (↻)</div>
+            <div class="tipLead">Re-runs:</div>
+            <ul class="tipList">
+              <li>DLVE data pulls</li>
+              <li>Attribution calculations</li>
+              <li>Layer joins</li>
+              <li>Ensures you’re seeing the latest truth</li>
+            </ul>
+          </span>
+        </button>
+        <button class="iconBtn hasTip" aria-label="Settings">
+          ⚙
+          <span class="tipCard">
+            <div class="tipTitle">Settings (⚙️)</div>
+            <div class="tipLead">Controls global behavior of the workspace:</div>
+            <ul class="tipList">
+              <li>Attribution model (first-touch, last-touch, multi-touch)</li>
+              <li>Time defaults</li>
+              <li>Currency / units</li>
+              <li>Export preferences</li>
+              <li>User permissions</li>
+            </ul>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="brandSelector" aria-label="Brand selector">
+      <button class="brandBtn active" id="btnMaggianos" data-brand="maggianos">
+        <span class="brandDot" style="background:#ffd34a"></span>Maggiano's
+      </button>
+      <button class="brandBtn" id="btnChilis" data-brand="chilis">
+        <span class="brandDot" style="background:#ff6b6b"></span>Chili's
+      </button>
+    </div>
+
+    <div class="toolrow" aria-label="Workspace tools">
+      <div class="tool hasTip active" aria-label="Layers / Data Catalog">
+        ▦
+        <span class="tipCard">
+          <div class="tipTitle">▦ Layers / Data Catalog</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>View all available datasets</li>
+            <li>Toggle layers on/off</li>
+            <li>Manage visibility and styling</li>
+          </ul>
+          <div class="tipLead">Includes</div>
+          <ul class="tipList">
+            <li>DLVE layers:</li>
+            <li>Sales</li>
+            <li>Attributed sales</li>
+            <li>Coupons</li>
+            <li>Delivery vs carryout</li>
+            <li>New vs returning</li>
+            <li>Third-party layers:</li>
+            <li>Audience segments</li>
+            <li>Demographics</li>
+            <li>Competitors</li>
+            <li>OOH / billboards</li>
+          </ul>
+        </span>
+      </div>
+      <div class="tool hasTip toolXL" aria-label="Insights / Signals">
+        ⌁
+        <span class="tipCard">
+          <div class="tipTitle"><span class="tipIcon tipIconBig">⌁</span>Insights / Signals</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>Highlights anomalies and patterns</li>
+            <li>Drives attention to risk or opportunity</li>
+          </ul>
+          <div class="tipLead">Examples</div>
+          <ul class="tipList">
+            <li>Underperforming regions</li>
+            <li>Coupon over-reliance</li>
+            <li>Competitive pressure zones</li>
+            <li>Sales vs exposure mismatch</li>
+      </div>
+      <div class="tool hasTip" aria-label="Data Sources">
+        ⛃
+        <span class="tipCard">
+          <div class="tipTitle">⛃ Data Sources</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>Shows raw datasets feeding the dashboard</li>
+          </ul>
+          <div class="tipLead">Examples</div>
+          <ul class="tipList">
+            <li>DLVE Transactions</li>
+            <li>POS feeds</li>
+            <li>Audience files</li>
+            <li>CSV / GeoJSON uploads</li>
+            <li>Licensed third-party data</li>
+          </ul>
+        </span>
+      </div>
+      <div class="tool hasTip" aria-label="Trade Areas / Draw Tools">
+        ✎
+        <span class="tipCard">
+          <div class="tipTitle">✎ Trade Areas / Draw Tools</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>Define areas for analysis</li>
+          </ul>
+          <div class="tipLead">Includes</div>
+          <ul class="tipList">
+            <li>Radius</li>
+            <li>Drive-time</li>
+            <li>Custom polygons</li>
+            <li>DMA / franchise boundaries</li>
+          </ul>
+        </span>
+      </div>
+      <div class="tool hasTip" aria-label="Analysis / Measurement">
+        ◯
+        <span class="tipCard">
+          <div class="tipTitle">◯ Analysis / Measurement</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>Run spatial and performance analysis</li>
+          </ul>
+          <div class="tipLead">Examples</div>
+          <ul class="tipList">
+            <li>Lift analysis</li>
+            <li>Overlap with competitors</li>
+            <li>Market saturation</li>
+            <li>Store trade area performance</li>
+          </ul>
+        </span>
+      </div>
+      <div class="tool hasTip toolXL" aria-label="Search / Locate">
+        ⌕
+        <span class="tipCard">
+          <div class="tipTitle"><span class="tipIcon tipIconBig">⌕</span>Search / Locate</div>
+          <div class="tipLead">Purpose</div>
+          <ul class="tipList">
+            <li>Quickly move the map</li>
+          </ul>
+          <div class="tipLead">Supports</div>
+          <ul class="tipList">
+            <li>City</li>
+            <li>ZIP</li>
+            <li>Store ID</li>
+            <li>Address</li>
+            <li>DMA</li>
+          </ul>
+        </span>
+      </div>
+    </div>
+
+    <div class="split"></div>
+
+    <!-- DATASETS -->
+    <div class="section">
+      <div class="sectionHeader">
+        <div class="h">DATASETS</div>
+        <button class="btnPrimary" id="openAddLayer">+ Add Layer</button>
+      </div>
+      <div class="search">
+        <input id="layerSearch" placeholder="Search layers or jump to a city/state..." />
+      </div>
+      <div class="datasetList">
+        <div class="dataset" id="datasetMaggianos">
+          <div class="bar" style="background: rgba(255,226,128,.95)"></div>
+          <div>
+            <div class="name">Maggiano's · Locations</div>
+            <div class="meta">Store locations nationwide</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="orders" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="kebab expandBtn" title="Expand">⋯</button>
+          </div>
+          <div class="datasetChildren">
+            <div class="layerRow" data-layer="orders">
+              <span class="dot" style="background: var(--ph)"></span>
+              <div>
+                <div class="lname">Maggiano's Locations</div>
+                <div class="lsub" id="maggianosCount">Loading...</div>
+              </div>
+              <div class="actions">
+                <button class="iconBtn eyeBtn" data-toggle="orders" title="Show/Hide">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+                </button>
+                <button class="iconBtn moreBtn" title="Layer menu"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dataset" id="datasetChilis" style="display:none">
+          <div class="bar" style="background: rgba(255,107,107,.85)"></div>
+          <div>
+            <div class="name">Chili's · Locations</div>
+            <div class="meta">Store locations nationwide</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="chilis" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="kebab expandBtn" title="Expand">⋯</button>
+          </div>
+          <div class="datasetChildren">
+            <div class="layerRow" data-layer="chilis">
+              <span class="dot" style="background: #ff6b6b"></span>
+              <div>
+                <div class="lname">Chili's Locations</div>
+                <div class="lsub" id="chilisCount">Loading...</div>
+              </div>
+              <div class="actions">
+                <button class="iconBtn eyeBtn" data-toggle="chilis" title="Show/Hide">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+                </button>
+                <button class="iconBtn moreBtn" title="Layer menu"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dataset">
+          <div class="bar" style="background: rgba(255,176,120,.7)"></div>
+          <div>
+            <div class="name">DLVE · Coupons</div>
+            <div class="meta">Where customers are using coupons</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="coupons" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="kebab expandBtn" title="Expand">⋯</button>
+          </div>
+          <div class="datasetChildren">
+            <div class="layerRow" data-layer="coupons">
+              <span class="dot" style="background: rgba(255,176,120,.7)"></span>
+              <div>
+                <div class="lname">Coupon Activity</div>
+                <div class="lsub">Points · coupon usage</div>
+              </div>
+              <div class="actions">
+                <button class="iconBtn eyeBtn" data-toggle="coupons" title="Show/Hide">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+                </button>
+                <button class="iconBtn moreBtn" title="Layer menu"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dataset">
+          <div class="bar" style="background: rgba(251,92,168,.65)"></div>
+          <div>
+            <div class="name">Competitors (3rd Party)</div>
+            <div class="meta">POI feed • Competitors</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="competitors" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="kebab expandBtn" title="Expand">⋯</button>
+          </div>
+        <div class="datasetChildren"></div>
+        </div>
+        <div class="dataset">
+          <div class="bar" style="background: rgba(120,150,255,.65)"></div>
+          <div>
+            <div class="name">Audience & Demo (3rd Party)</div>
+            <div class="meta">Income, demo, mobility, segments</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="audience" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="kebab expandBtn" title="Expand">⋯</button>
+          </div>
+          <div class="datasetChildren">
+            <div class="layerRow" data-layer="audience">
+              <span class="dot" style="background: var(--yellow)"></span>
+              <div>
+                <div class="lname">Audience Index</div>
+                <div class="lsub">Polygons · demo / segments</div>
+              </div>
+              <div class="actions">
+                <button class="iconBtn eyeBtn" data-toggle="audience" title="Show/Hide">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+                </button>
+                <button class="iconBtn moreBtn" title="Layer menu"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAP -->
+  <main class="mapWrap">
+    <div class="kpiStrip" aria-label="Primary KPIs">
+      <div class="kpi">
+        <div class="kpiLabel">Total Sales</div>
+        <div class="kpiValue">$128.4M</div>
+        <div class="kpiSub"><span class="kpiDelta up">▲ +6.2%</span> vs prior</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">App</div>
+        <div class="kpiValue">$54.1M</div>
+        <div class="kpiSub">42% share</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">Mobile Web</div>
+        <div class="kpiValue">$49.8M</div>
+        <div class="kpiSub">39% share</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">Desktop</div>
+        <div class="kpiValue">$24.5M</div>
+        <div class="kpiSub">19% share</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">Orders</div>
+        <div class="kpiValue">6.9M</div>
+        <div class="kpiSub"><span class="kpiDelta up">▲ +4.1%</span> vs prior</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">AOV</div>
+        <div class="kpiValue">$18.62</div>
+        <div class="kpiSub"><span class="kpiDelta down">▼ −1.3%</span> vs prior</div>
+      </div>
+      <div class="kpi">
+        <div class="kpiLabel">YoY Δ</div>
+        <div class="kpiValue">+8.4%</div>
+        <div class="kpiSub">Year over year</div>
+      </div>
+      <div class="kpiDrawer" id="kpiDrawer">
+        <button class="drawerToggle" id="drawerToggle" aria-expanded="false">
+          Map controls
+          <span class="drawerChevron">▾</span>
+        </button>
+        <div class="drawerContent" aria-label="Map controls">
+          <select class="pillSelect">
+            <option>Sales Performance</option>
+            <option>Attributed Sales</option>
+            <option>Coupon Reliance</option>
+            <option>Delivery vs Carryout</option>
+            <option>New vs Returning</option>
+          </select>
+          <select class="pillSelect">
+            <option>Last 30 Days</option>
+            <option>Last 7 Days</option>
+            <option>Last 90 Days</option>
+            <option>YTD</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="chat" id="chat">
+      <div class="chatHeader">
+        <div>
+          <div class="h">Ask your data</div>
+          <div class="mode">DLVE + 3rd party layers</div>
+        </div>
+        <button class="iconBtn" id="chatCollapse" title="Collapse">▾</button>
+      </div>
+      <div class="chatBody" id="chatBody">
+        <div class="bubble"><strong>Suggested:</strong> “Show red flags in Florida where delivery share is down but competitor density is high.”</div>
+        <div class="bubble"><strong>Suggested:</strong> “Which stores have the highest coupon reliance vs their market average?”</div>
+      </div>
+      <div class="chatInput" id="chatInput">
+        <input id="chatText" placeholder="Ask about sales, coupons, products, audience, competitors..." />
+        <button id="chatSend">Ask</button>
+      </div>
+    </div>
+
+    <div class="alertTray">
+      <div class="alertPanel" id="alertPanel">
+        <div class="alertTitle">Alerts</div>
+        <div class="alertCard warn"><div>Revenue down — Miami<div class="alertSub">-8% vs last period · high competitor density</div></div></div>
+        <div class="alertCard ok"><div>Coupon reliance — Phoenix<div class="alertSub">Top 5% discount concentration</div></div></div>
+        <div class="alertCard warn"><div>Delivery share drop — Chicago<div class="alertSub">-4.1 pts vs 30-day baseline</div></div></div>
+      </div>
+      <div class="alertTab" id="alertTab">Alerts<span class="alertPill">3</span></div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ADD LAYER MODAL -->
+<div class="modalBackdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modalTop">
+      <div class="mt">Add a layer</div>
+      <button class="iconBtn" id="closeAddLayer" title="Close">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="catalog">
+        <div class="catalogSearch">
+          <input id="catalogSearch" placeholder="Search DLVE metrics and 3rd‑party datasets..." />
+        </div>
+
+        <div class="tabs">
+          <div class="tab active" data-tab="dlve">DLVE</div>
+          <div class="tab" data-tab="audience">Audience</div>
+          <div class="tab" data-tab="poi">POI / Competitors</div>
+          <div class="tab" data-tab="dooh">DOOH</div>
+          <div class="tab" data-tab="custom">Custom</div>
+        </div>
+
+        <div class="cardGrid" id="cardGrid">
+          <div class="card" data-layerkey="metric_delivery_share" data-category="dlve">
+            <div class="ct">Off-Premise Mix</div>
+            <div class="cd">Dine-in vs carryout/delivery share by location.</div>
+            <div class="tag">DLVE metric</div>
+          </div>
+          <div class="card" data-layerkey="metric_coupon_reliance" data-category="dlve">
+            <div class="ct">Offer Reliance</div>
+            <div class="cd">Which promos drive volume and where discounts concentrate.</div>
+            <div class="tag">DLVE metric</div>
+          </div>
+          <div class="card" data-layerkey="metric_top_products" data-category="dlve">
+            <div class="ct">Top Menu Items</div>
+            <div class="cd">Mix shift: pasta, chicken, steak, desserts, family-style.</div>
+            <div class="tag">DLVE metric</div>
+          </div>
+          <div class="card" data-layerkey="metric_new_returning" data-category="dlve">
+            <div class="ct">New vs Returning</div>
+            <div class="cd">Share of new customers vs loyalists by market.</div>
+            <div class="tag">DLVE metric</div>
+          </div>
+          <div class="card" data-layerkey="metric_app_share" data-category="dlve">
+            <div class="ct">Digital Ordering Share</div>
+            <div class="cd">Web vs app ordering and conversion by market.</div>
+            <div class="tag">DLVE metric</div>
+          </div>
+          <div class="card" data-layerkey="thirdparty_income" data-category="audience">
+            <div class="ct">Income & Demo</div>
+            <div class="cd">Median income, household size, age bands (3rd party).</div>
+            <div class="tag">3rd party</div>
+          </div>
+          <div class="card" data-layerkey="audience_value_seekers" data-category="audience">
+            <div class="ct">Value Seekers</div>
+            <div class="cd">Promo-driven households, high deal sensitivity.</div>
+            <div class="tag">Audience segment</div>
+          </div>
+          <div class="card" data-layerkey="audience_family_night" data-category="audience">
+            <div class="ct">Family Night</div>
+            <div class="cd">Large households, weekend peak ordering.</div>
+            <div class="tag">Audience segment</div>
+          </div>
+          <div class="card" data-layerkey="audience_latenight" data-category="audience">
+            <div class="ct">Late-Night Cravers</div>
+            <div class="cd">Late ordering windows, strong delivery mix.</div>
+            <div class="tag">Audience segment</div>
+          </div>
+          <div class="card" data-layerkey="audience_college" data-category="audience">
+            <div class="ct">Student Density</div>
+            <div class="cd">Campus-adjacent demand pockets.</div>
+            <div class="tag">Audience segment</div>
+          </div>
+          <div class="card" data-layerkey="thirdparty_competitors" data-category="poi">
+            <div class="ct">Competitor Density</div>
+            <div class="cd">Italian casual dining competitors, distance rings, density heat.</div>
+            <div class="tag">POI</div>
+          </div>
+          <div class="card" data-layerkey="poi_opentable" data-category="poi">
+            <div class="ct">OpenTable Reservations</div>
+            <div class="cd">Reservation demand, booking volume, peak times.</div>
+            <div class="tag">Reservations</div>
+          </div>
+          <div class="card" data-layerkey="poi_olive_garden" data-category="poi">
+            <div class="ct">Olive Garden</div>
+            <div class="cd">Store locations, distance buffers.</div>
+            <div class="tag">POI / Competitors</div>
+          </div>
+          <div class="card" data-layerkey="poi_carrabbas" data-category="poi">
+            <div class="ct">Carrabba's</div>
+            <div class="cd">Store locations, distance buffers.</div>
+            <div class="tag">POI / Competitors</div>
+          </div>
+          <div class="card" data-layerkey="poi_cheesecake_factory" data-category="poi">
+            <div class="ct">The Cheesecake Factory</div>
+            <div class="cd">Store locations, distance buffers.</div>
+            <div class="tag">POI / Competitors</div>
+          </div>
+          <div class="card" data-layerkey="poi_buca" data-category="poi">
+            <div class="ct">Buca di Beppo</div>
+            <div class="cd">Store locations, distance buffers.</div>
+            <div class="tag">POI / Competitors</div>
+          </div>
+          <div class="card" data-layerkey="dooh_billboards" data-category="dooh">
+            <div class="ct">Billboards (500m)</div>
+            <div class="cd">Digital and static billboards within trade areas.</div>
+            <div class="tag">DOOH</div>
+          </div>
+          <div class="card" data-layerkey="dooh_transit" data-category="dooh">
+            <div class="ct">Transit Shelters</div>
+            <div class="cd">Bus shelter screens and posters.</div>
+            <div class="tag">DOOH</div>
+          </div>
+          <div class="card" data-layerkey="dooh_gas" data-category="dooh">
+            <div class="ct">Gas Station Screens</div>
+            <div class="cd">Fuel pump video inventory by DMA.</div>
+            <div class="tag">DOOH</div>
+          </div>
+          <div class="card" data-layerkey="dooh_stadium" data-category="dooh">
+            <div class="ct">Stadium & Arena LED</div>
+            <div class="cd">Sports venue signage inventory.</div>
+            <div class="tag">DOOH</div>
+          </div>
+          <div class="card" data-layerkey="custom_geojson" data-category="custom">
+            <div class="ct">Upload GeoJSON</div>
+            <div class="cd">Bring your own polygons or points.</div>
+            <div class="tag">Custom</div>
+          </div>
+          <div class="card" data-layerkey="custom_crm" data-category="custom">
+            <div class="ct">CRM Households</div>
+            <div class="cd">First-party household segments.</div>
+            <div class="tag">Custom</div>
+          </div>
+          <div class="card" data-layerkey="custom_territories" data-category="custom">
+            <div class="ct">Franchise Territories</div>
+            <div class="cd">Territory boundaries for performance rollups.</div>
+            <div class="tag">Custom</div>
+          </div>
+          <div class="card" data-layerkey="custom_tradeareas" data-category="custom">
+            <div class="ct">Delivery Zones</div>
+            <div class="cd">Store trade areas and delivery catchments.</div>
+            <div class="tag">Custom</div>
+          </div>
+          <div class="card" data-layerkey="thirdparty_mobility" data-category="audience">
+            <div class="ct">Mobility & Visits</div>
+            <div class="cd">Foot traffic & mobility patterns (provider-dependent).</div>
+            <div class="tag">3rd party</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="config">
+        <div class="cfgTitle">Layer settings</div>
+        <div class="cfgHelp">Pick a layer from the catalog. Configure scope, lookback, and join keys (store_id, ZIP, DMA). This is a UI mock only.</div>
+
+        <div class="form">
+          <div class="row">
+            <div class="field">
+              <label>Layer name</label>
+              <input id="cfgName" placeholder="e.g., Coupon Reliance" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Geometry</label>
+              <select id="cfgGeom">
+                <option>Points (stores / POIs)</option>
+                <option>Polygons (ZIP / DMA / County)</option>
+                <option>Heatmap (density)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Lookback</label>
+              <select id="cfgLookback">
+                <option>Last 30 days</option>
+                <option>Last 7 days</option>
+                <option>Last 90 days</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Join key</label>
+              <select id="cfgJoin">
+                <option>store_id</option>
+                <option>zip</option>
+                <option>dma</option>
+                <option>county_fips</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Color</label>
+              <select id="cfgColor">
+                <option>Auto</option>
+                <option>Pink</option>
+                <option>Yellow</option>
+                <option>Blue</option>
+                <option>Green</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="modalBottom">
+      <button class="btnGhost" id="cancelAdd">Cancel</button>
+      <button class="btnAdd" id="confirmAdd">Add layer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // MAP
+  const map = L.map('map', { zoomControl:false }).setView([37.5,-96],4);
+  L.tileLayer('https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution:'' }).addTo(map);
+
+  // --- Demo point layers (simulate Foursquare look) ---
+  function jitter(v, r){ return v + (Math.random() - 0.5) * r; }
+  const US_BOUNDS = L.latLngBounds([24.5, -124.8], [49.5, -66.9]);
+  map.setMaxBounds(US_BOUNDS);
+
+  // Rough lower-48 polygon to keep points off the oceans.
+  const US_POLY = [
+    [48.9,-124.8],[47.8,-124.6],[46.3,-124.2],[44.5,-124.2],[42.2,-124.4],
+    [40.6,-124.1],[39.0,-123.6],[37.8,-122.9],[36.7,-122.3],[35.6,-121.6],
+    [34.7,-120.5],[34.1,-119.0],[33.4,-118.2],[32.7,-117.1],[32.3,-114.6],
+    [31.4,-111.0],[31.3,-106.5],[31.7,-104.0],[29.8,-100.0],[28.2,-97.2],
+    [26.6,-96.2],[26.0,-97.4],[25.8,-81.2],[27.6,-80.1],[29.6,-81.0],
+    [31.2,-81.5],[32.1,-80.6],[33.0,-79.0],[34.6,-77.4],[36.2,-75.8],
+    [38.0,-75.0],[39.4,-74.3],[40.4,-73.8],[41.0,-73.0],[41.5,-72.2],
+    [42.0,-71.5],[42.6,-70.9],[43.4,-70.2],[44.1,-69.7],[44.6,-69.2],
+    [45.0,-68.7],[45.1,-67.9],[44.6,-67.1],[44.0,-68.8],[44.6,-70.6],
+    [45.0,-71.5],[46.2,-83.2],[45.8,-85.7],[45.2,-87.7],[44.4,-87.9],
+    [43.7,-86.9],[42.6,-87.3],[41.9,-87.8],[41.6,-87.5],[41.3,-87.0],
+    [41.0,-86.7],[41.3,-84.8],[42.1,-82.6],[43.2,-82.4],[44.6,-83.1],
+    [46.0,-84.6],[47.0,-89.8],[48.3,-95.1],[48.9,-124.8]
+  ];
+
+  function pointInPolygon(pt, poly){
+    const x = pt[1];
+    const y = pt[0];
+    let inside = false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const xi = poly[i][1], yi = poly[i][0];
+      const xj = poly[j][1], yj = poly[j][0];
+      const intersect = ((yi>y)!==(yj>y)) && (x < (xj-xi)*(y-yi)/(yj-yi)+xi);
+      if(intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function jitterInBounds(lat, lng, latR, lngR){
+    for(let tries=0; tries<8; tries++){
+      const jLat = jitter(lat, latR);
+      const jLng = jitter(lng, lngR);
+      if(US_BOUNDS.contains([jLat, jLng]) && pointInPolygon([jLat, jLng], US_POLY)){
+        return [jLat, jLng];
+      }
+    }
+    const jLat = Math.min(Math.max(lat, US_BOUNDS.getSouth() + 0.2), US_BOUNDS.getNorth() - 0.2);
+    const jLng = Math.min(Math.max(lng, US_BOUNDS.getWest() + 0.2), US_BOUNDS.getEast() - 0.2);
+    return [jLat, jLng];
+  }
+
+  // Metro clusters for Maggianos
+  const METROS = [
+    {lat:40.7128,lng:-74.0060,w:450},
+    {lat:34.0522,lng:-118.2437,w:420},
+    {lat:41.8781,lng:-87.6298,w:280},
+    {lat:29.7604,lng:-95.3698,w:260},
+    {lat:33.4484,lng:-112.0740,w:240},
+    {lat:39.9526,lng:-75.1652,w:230},
+    {lat:32.7767,lng:-96.7970,w:240},
+    {lat:33.7490,lng:-84.3880,w:220},
+    {lat:25.7617,lng:-80.1918,w:200},
+    {lat:47.6062,lng:-122.3321,w:170},
+    {lat:38.9072,lng:-77.0369,w:170},
+    {lat:42.3601,lng:-71.0589,w:180},
+    {lat:36.1627,lng:-86.7816,w:150},
+    {lat:39.7392,lng:-104.9903,w:160}
+  ];
+
+  function dotIcon(color, glow, size, opacity){
+    return L.divIcon({
+      className:'',
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};opacity:${opacity};box-shadow:0 0 ${glow}px rgba(255,140,110,.85)"></div>`
+    });
+  }
+
+  function parseCsv(text){
+    const rows = [];
+    let row = [];
+    let cur = '';
+    let inQuotes = false;
+    for(let i=0;i<text.length;i++){
+      const ch = text[i];
+      const next = text[i+1];
+      if(inQuotes){
+        if(ch === '"' && next === '"'){ cur += '"'; i++; }
+        else if(ch === '"'){ inQuotes = false; }
+        else cur += ch;
+      }else{
+        if(ch === '"'){ inQuotes = true; }
+        else if(ch === ','){ row.push(cur); cur=''; }
+        else if(ch === '\n'){ row.push(cur); rows.push(row); row=[]; cur=''; }
+        else if(ch !== '\r'){ cur += ch; }
+      }
+    }
+    if(cur.length || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  const cityIndex = new Map();
+  const cityStateIndex = new Map();
+  const stateIndex = new Map();
+  const STATE_NAMES = {
+    AL:'alabama', AK:'alaska', AZ:'arizona', AR:'arkansas', CA:'california', CO:'colorado',
+    CT:'connecticut', DE:'delaware', FL:'florida', GA:'georgia', HI:'hawaii', ID:'idaho',
+    IL:'illinois', IN:'indiana', IA:'iowa', KS:'kansas', KY:'kentucky', LA:'louisiana',
+    ME:'maine', MD:'maryland', MA:'massachusetts', MI:'michigan', MN:'minnesota',
+    MS:'mississippi', MO:'missouri', MT:'montana', NE:'nebraska', NV:'nevada',
+    NH:'new hampshire', NJ:'new jersey', NM:'new mexico', NY:'new york', NC:'north carolina',
+    ND:'north dakota', OH:'ohio', OK:'oklahoma', OR:'oregon', PA:'pennsylvania',
+    RI:'rhode island', SC:'south carolina', SD:'south dakota', TN:'tennessee', TX:'texas',
+    UT:'utah', VT:'vermont', VA:'virginia', WA:'washington', WV:'west virginia',
+    WI:'wisconsin', WY:'wyoming', DC:'district of columbia'
+  };
+
+  function normalizeKey(value){
+    return (value || '').toString().trim().toLowerCase();
+  }
+
+  function indexCity(name, lat, lng){
+    const key = normalizeKey(name);
+    if(!key) return;
+    const entry = cityIndex.get(key) || { latSum:0, lngSum:0, count:0 };
+    entry.latSum += lat;
+    entry.lngSum += lng;
+    entry.count += 1;
+    cityIndex.set(key, entry);
+  }
+
+  function indexCityState(city, state, lat, lng){
+    const cityKey = normalizeKey(city);
+    const stateKey = normalizeKey(state);
+    if(!cityKey || !stateKey) return;
+    const key = `${cityKey}|${stateKey}`;
+    const entry = cityStateIndex.get(key) || { latSum:0, lngSum:0, count:0 };
+    entry.latSum += lat;
+    entry.lngSum += lng;
+    entry.count += 1;
+    cityStateIndex.set(key, entry);
+  }
+
+  function indexState(state, lat, lng){
+    const stateKey = normalizeKey(state);
+    if(!stateKey) return;
+    const entry = stateIndex.get(stateKey) || { latSum:0, lngSum:0, count:0 };
+    entry.latSum += lat;
+    entry.lngSum += lng;
+    entry.count += 1;
+    stateIndex.set(stateKey, entry);
+    const abbr = stateKey.toUpperCase();
+    const full = STATE_NAMES[abbr];
+    if(full){
+      const fullEntry = stateIndex.get(full) || { latSum:0, lngSum:0, count:0 };
+      fullEntry.latSum += lat;
+      fullEntry.lngSum += lng;
+      fullEntry.count += 1;
+      stateIndex.set(full, fullEntry);
+    }
+  }
+
+  function buildLocationHtml(row, headerMap){
+    const name = row[headerMap.name] || row[headerMap.store] || 'Location';
+    const street = row[headerMap.street] || '';
+    const city = row[headerMap.city] || '';
+    const state = row[headerMap.state] || '';
+    const zip = row[headerMap.zip] || '';
+    const phone = row[headerMap.phone] || '';
+    const line2 = [city, state, zip].filter(Boolean).join(', ');
+    return `
+      <div style="min-width:180px">
+        <div style="font-weight:700; margin-bottom:4px">${name}</div>
+        ${street ? `<div>${street}</div>` : ''}
+        ${line2 ? `<div>${line2}</div>` : ''}
+        ${phone ? `<div style="margin-top:4px; color:#c7d2fe">${phone}</div>` : ''}
+      </div>
+    `;
+  }
+
+  async function addCsvPoints(url, layer, color, size, opacity, shouldIndexCity){
+    const res = await fetch(url);
+    const text = await res.text();
+    const rows = parseCsv(text);
+    const header = rows.shift() || [];
+    const headerMap = {
+      lat: header.findIndex(h=>h.toLowerCase().includes('latitude')),
+      lng: header.findIndex(h=>h.toLowerCase().includes('longitude')),
+      city: header.findIndex(h=>h.toLowerCase() === 'city' || h.toLowerCase().includes('city')),
+      name: header.findIndex(h=>h.toLowerCase() === 'name' || h.toLowerCase().includes('name')),
+      store: header.findIndex(h=>h.toLowerCase().includes('store')),
+      street: header.findIndex(h=>h.toLowerCase().includes('street')),
+      state: header.findIndex(h=>h.toLowerCase() === 'state' || h.toLowerCase().includes('state')),
+      zip: header.findIndex(h=>h.toLowerCase().includes('zip')),
+      phone: header.findIndex(h=>h.toLowerCase().includes('phone'))
+    };
+    const latIdx = headerMap.lat;
+    const lngIdx = headerMap.lng;
+    const cityIdx = shouldIndexCity ? headerMap.city : -1;
+    if(latIdx === -1 || lngIdx === -1) throw new Error('Missing lat/lng columns');
+    rows.forEach(r=>{
+      const lat = parseFloat(r[latIdx]);
+      const lng = parseFloat(r[lngIdx]);
+      if(!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      if(!US_BOUNDS.contains([lat, lng])) return;
+      if(shouldIndexCity && cityIdx > -1) indexCity(r[cityIdx], lat, lng);
+      if(shouldIndexCity && cityIdx > -1 && headerMap.state > -1) indexCityState(r[cityIdx], r[headerMap.state], lat, lng);
+      if(shouldIndexCity && headerMap.state > -1) indexState(r[headerMap.state], lat, lng);
+      L.marker([lat, lng], {
+        icon: dotIcon(color, 10, size, opacity),
+        interactive:true
+      }).bindPopup(buildLocationHtml(r, headerMap), { closeButton:false, offset:[0, -6] }).addTo(layer);
+    });
+  }
+
+  const layerOrders = L.layerGroup();
+  const layerChilis = L.layerGroup();
+  const layerCoupons = L.layerGroup();
+  const layerCompetitors = L.layerGroup();
+  const phColor = getComputedStyle(document.documentElement).getPropertyValue('--ph').trim() || '#ffb199';
+  const chilisColor = '#ff6b6b';
+  const couponColor = '#ffb078';
+  const compColor = getComputedStyle(document.documentElement).getPropertyValue('--pink').trim() || '#fb5ca8';
+
+  let maggianosLocationCount = 0;
+  let chilisLocationCount = 0;
+
+  async function addCsvPointsCounted(url, layer, color, size, opacity, shouldIndexCity){
+    const res = await fetch(url);
+    const text = await res.text();
+    const rows = parseCsv(text);
+    const header = rows.shift() || [];
+    const headerMap = {
+      lat: header.findIndex(h=>h.toLowerCase().includes('latitude')),
+      lng: header.findIndex(h=>h.toLowerCase().includes('longitude')),
+      city: header.findIndex(h=>h.toLowerCase() === 'city' || h.toLowerCase().includes('city')),
+      name: header.findIndex(h=>h.toLowerCase() === 'name' || h.toLowerCase().includes('name')),
+      store: header.findIndex(h=>h.toLowerCase().includes('store')),
+      street: header.findIndex(h=>h.toLowerCase().includes('street')),
+      state: header.findIndex(h=>h.toLowerCase() === 'state' || h.toLowerCase().includes('state')),
+      zip: header.findIndex(h=>h.toLowerCase().includes('zip')),
+      phone: header.findIndex(h=>h.toLowerCase().includes('phone'))
+    };
+    const latIdx = headerMap.lat;
+    const lngIdx = headerMap.lng;
+    const cityIdx = shouldIndexCity ? headerMap.city : -1;
+    if(latIdx === -1 || lngIdx === -1) throw new Error('Missing lat/lng columns');
+    let count = 0;
+    rows.forEach(r=>{
+      const lat = parseFloat(r[latIdx]);
+      const lng = parseFloat(r[lngIdx]);
+      if(!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+      if(!US_BOUNDS.contains([lat, lng])) return;
+      if(shouldIndexCity && cityIdx > -1) indexCity(r[cityIdx], lat, lng);
+      if(shouldIndexCity && cityIdx > -1 && headerMap.state > -1) indexCityState(r[cityIdx], r[headerMap.state], lat, lng);
+      if(shouldIndexCity && headerMap.state > -1) indexState(r[headerMap.state], lat, lng);
+      L.marker([lat, lng], {
+        icon: dotIcon(color, 10, size, opacity),
+        interactive:true
+      }).bindPopup(buildLocationHtml(r, headerMap), { closeButton:false, offset:[0, -6] }).addTo(layer);
+      count++;
+    });
+    return count;
+  }
+
+  Promise.all([
+    addCsvPointsCounted('Maggianos_Little_Italy_USA.csv', layerOrders, phColor, 5, 0.9, true).then(c=>{
+      maggianosLocationCount = c;
+      const el = document.getElementById('maggianosCount');
+      if(el) el.textContent = c.toLocaleString() + ' locations';
+    }),
+    addCsvPointsCounted('Chilis_USA.csv', layerChilis, chilisColor, 4, 0.85, true).then(c=>{
+      chilisLocationCount = c;
+      const el = document.getElementById('chilisCount');
+      if(el) el.textContent = c.toLocaleString() + ' locations';
+    }),
+    addCsvPoints('Maggianos_Little_Italy_USA.csv', layerCoupons, couponColor, 4, 0.55, false)
+  ]).catch(()=>{
+    METROS.forEach(m=>{
+      for(let i=0;i<m.w;i++){
+        L.marker(jitterInBounds(m.lat, m.lng, 1.05, 1.05), {
+          icon: dotIcon(phColor, 10, 6, 0.95),
+          interactive:false
+        }).addTo(layerOrders);
+      }
+    });
+  });
+
+  // Audience layer (simple grid polygons as placeholder)
+  const layerAudience = L.layerGroup();
+  function addAudienceGrid(){
+    // Create coarse rectangles over a few areas just to show a polygon layer
+    const cells = [
+      [[33.2,-118.7],[34.8,-117.1]],
+      [[40.1,-75.6],[41.2,-73.9]],
+      [[29.1,-98.9],[30.4,-97.2]],
+      [[41.2,-88.8],[42.4,-86.7]],
+    ];
+    cells.forEach((c,idx)=>{
+      const poly = L.polygon([
+        [c[0][0], c[0][1]],
+        [c[0][0], c[1][1]],
+        [c[1][0], c[1][1]],
+        [c[1][0], c[0][1]]
+      ], {
+        color: 'rgba(255,212,106,.65)',
+        weight: 1,
+        fillColor: idx%2===0 ? 'rgba(255,212,106,.22)' : 'rgba(255,212,106,.12)',
+        fillOpacity: 1
+      });
+      poly.addTo(layerAudience);
+    });
+  }
+  addAudienceGrid();
+
+  // Add default layers
+  layerOrders.addTo(map);
+  layerCompetitors.addTo(map);
+
+  const LAYERS = {
+    orders: layerOrders,
+    chilis: layerChilis,
+    coupons: layerCoupons,
+    competitors: layerCompetitors,
+    audience: layerAudience
+  };
+
+  let activeBrand = 'maggianos';
+
+  setLayerVisible('orders', true);
+  setLayerVisible('chilis', false);
+  setLayerVisible('competitors', true);
+  setLayerVisible('coupons', false);
+  setLayerVisible('audience', false);
+
+  function switchBrand(brand){
+    activeBrand = brand;
+    const isMaggianos = brand === 'maggianos';
+    document.getElementById('btnMaggianos').classList.toggle('active', isMaggianos);
+    document.getElementById('btnChilis').classList.toggle('active', !isMaggianos);
+    document.getElementById('datasetMaggianos').style.display = isMaggianos ? '' : 'none';
+    document.getElementById('datasetChilis').style.display = !isMaggianos ? '' : 'none';
+    setLayerVisible('orders', isMaggianos);
+    setLayerVisible('chilis', !isMaggianos);
+  }
+
+  document.getElementById('btnMaggianos').addEventListener('click', ()=> switchBrand('maggianos'));
+  document.getElementById('btnChilis').addEventListener('click', ()=> switchBrand('chilis'));
+
+  function setLayerVisible(key, on){
+    const layer = LAYERS[key];
+    if(!layer) return;
+    if(on) map.addLayer(layer);
+    else map.removeLayer(layer);
+
+    // sync toggles
+    document.querySelectorAll(`[data-toggle="${key}"]`).forEach(el=>{
+      if(el.classList.contains('toggle')){
+        el.classList.toggle('on', on);
+      }
+      if(el.classList.contains('eyeBtn')){
+        el.classList.toggle('off', !on);
+      }
+    });
+  }
+
+  function slugify(text){
+    return (text || 'layer').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  }
+
+  function colorFromChoice(choice){
+    switch((choice || '').toLowerCase()){
+      case 'pink': return getComputedStyle(document.documentElement).getPropertyValue('--pink').trim() || '#fb5ca8';
+      case 'yellow': return getComputedStyle(document.documentElement).getPropertyValue('--yellow').trim() || '#ffd46a';
+      case 'blue': return '#7aa6ff';
+      case 'green': return '#7fe2a8';
+      default: return getComputedStyle(document.documentElement).getPropertyValue('--ph').trim() || '#ffd34a';
+    }
+  }
+
+  function addMockPoints(layer, color){
+    let added = 0;
+    for(let i=0;i<200 && added<140;i++){
+      const lat = US_BOUNDS.getSouth() + 0.8 + Math.random() * (US_BOUNDS.getNorth() - US_BOUNDS.getSouth() - 1.6);
+      const lng = US_BOUNDS.getWest() + 0.8 + Math.random() * (US_BOUNDS.getEast() - US_BOUNDS.getWest() - 1.6);
+      if(pointInPolygon([lat, lng], US_POLY)){
+        L.marker([lat, lng], {
+          icon: dotIcon(color, 8, 5, 0.8),
+          interactive:false
+        }).addTo(layer);
+        added++;
+      }
+    }
+  }
+
+  function addMockPolygons(layer, color){
+    const cells = [
+      [[33.2,-118.7],[34.8,-117.1]],
+      [[40.1,-75.6],[41.2,-73.9]],
+      [[29.1,-98.9],[30.4,-97.2]],
+      [[41.2,-88.8],[42.4,-86.7]],
+    ];
+    cells.forEach((c,idx)=>{
+      const poly = L.polygon([
+        [c[0][0], c[0][1]],
+        [c[0][0], c[1][1]],
+        [c[1][0], c[1][1]],
+        [c[1][0], c[0][1]]
+      ], {
+        color: color,
+        weight: 1,
+        fillColor: color,
+        fillOpacity: idx%2===0 ? 0.22 : 0.12
+      });
+      poly.addTo(layer);
+    });
+  }
+
+  function wireToggle(el){
+    el.addEventListener('click', ()=>{
+      const key = el.getAttribute('data-toggle');
+      const isOn = map.hasLayer(LAYERS[key]);
+      setLayerVisible(key, !isOn);
+    });
+  }
+
+  function wireEye(el){
+    el.addEventListener('click', ()=>{
+      const key = el.getAttribute('data-toggle');
+      const isOn = map.hasLayer(LAYERS[key]);
+      setLayerVisible(key, !isOn);
+    });
+  }
+
+  function addLayerRow(key, name, color, subtext){
+    const list = document.querySelector('.datasetList');
+    if(!list) return;
+    const dataset = document.createElement('div');
+    dataset.className = 'dataset open';
+    dataset.innerHTML = `
+      <div class="bar" style="background:${color}"></div>
+      <div>
+        <div class="name">${name}</div>
+        <div class="meta">${subtext}</div>
+      </div>
+      <div class="actions">
+        <button class="iconBtn eyeBtn" data-toggle="${key}" title="Show/Hide">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+        </button>
+        <button class="kebab expandBtn" title="Expand">⋯</button>
+      </div>
+      <div class="datasetChildren">
+        <div class="layerRow" data-layer="${key}">
+          <span class="dot" style="background:${color}"></span>
+          <div>
+            <div class="lname">${name}</div>
+            <div class="lsub">${subtext}</div>
+          </div>
+          <div class="actions">
+            <button class="iconBtn eyeBtn" data-toggle="${key}" title="Show/Hide">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5.5 0-9.7 4.1-11 6.5C2.3 13.9 6.5 18 12 18s9.7-4.1 11-6.5C21.7 9.1 17.5 5 12 5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/><circle cx="12" cy="11.5" r="1.5"/></svg>
+            </button>
+            <button class="iconBtn moreBtn" title="Layer menu"></button>
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(dataset);
+    dataset.querySelectorAll('.eyeBtn').forEach(wireEye);
+    dataset.querySelector('.expandBtn')?.addEventListener('click', ()=>{
+      dataset.classList.toggle('open');
+    });
+  }
+
+  function addLegendRow(key, name, color, on){
+    const list = document.querySelector('.legendList');
+    if(!list) return;
+    const row = document.createElement('div');
+    row.className = 'legendRow';
+    row.innerHTML = `
+      <span class="dot" style="background:${color}"></span>
+      <div class="label">${name}</div>
+      <div class="toggle ${on ? 'on' : ''}" data-toggle="${key}"></div>
+    `;
+    list.appendChild(row);
+    wireToggle(row.querySelector('.toggle'));
+  }
+
+  // Legend toggle clicks
+  document.querySelectorAll('.toggle').forEach(wireToggle);
+
+  // Eye button toggles
+  document.querySelectorAll('.eyeBtn').forEach(wireEye);
+  document.querySelectorAll('.expandBtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const card = btn.closest('.dataset');
+      if(card) card.classList.toggle('open');
+    });
+  });
+
+  // Alerts tray
+  const alertTab = document.getElementById('alertTab');
+  const alertPanel = document.getElementById('alertPanel');
+  alertTab.addEventListener('click', ()=> alertPanel.classList.toggle('open'));
+
+  // KPI drawer (map controls)
+  const kpiDrawer = document.getElementById('kpiDrawer');
+  const drawerToggle = document.getElementById('drawerToggle');
+  if(kpiDrawer && drawerToggle){
+    drawerToggle.addEventListener('click', ()=>{
+      const isOpen = kpiDrawer.classList.toggle('open');
+      drawerToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  }
+
+  // Add Layer modal
+  const modal = document.getElementById('modalBackdrop');
+  function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
+  function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+
+  document.getElementById('openAddLayer').addEventListener('click', openModal);
+  document.getElementById('closeAddLayer').addEventListener('click', closeModal);
+  document.getElementById('cancelAdd').addEventListener('click', closeModal);
+
+  // Clicking outside modal closes
+  modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+
+  // Catalog: click card to populate settings (mock)
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      document.querySelectorAll('.card').forEach(c=>c.style.borderColor='rgba(35,48,79,.8)');
+      card.style.borderColor = 'rgba(120,150,255,.9)';
+      const name = card.querySelector('.ct')?.textContent?.trim() || 'New layer';
+      document.getElementById('cfgName').value = name;
+    });
+  });
+
+  // Catalog tabs (filter cards by category)
+  const catalogSearch = document.getElementById('catalogSearch');
+  const catalogTabs = Array.from(document.querySelectorAll('.tab'));
+  const catalogCards = Array.from(document.querySelectorAll('.card'));
+  const tabPlaceholders = {
+    dlve: 'Search DLVE metrics...',
+    audience: 'Search audience segments...',
+    poi: 'Search POI / competitors...',
+    dooh: 'Search DOOH inventory...',
+    custom: 'Search custom layers...'
+  };
+  let activeTab = 'dlve';
+
+  function applyCatalogFilter(){
+    const q = catalogSearch.value.trim().toLowerCase();
+    catalogCards.forEach(card=>{
+      const category = card.dataset.category || 'dlve';
+      const matchesTab = category === activeTab;
+      const matchesSearch = !q || card.innerText.toLowerCase().includes(q);
+      card.style.display = matchesTab && matchesSearch ? '' : 'none';
+    });
+  }
+
+  catalogTabs.forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      activeTab = tab.dataset.tab || 'dlve';
+      catalogTabs.forEach(t=>t.classList.toggle('active', t === tab));
+      catalogSearch.placeholder = tabPlaceholders[activeTab] || tabPlaceholders.dlve;
+      applyCatalogFilter();
+    });
+  });
+
+  catalogSearch.addEventListener('input', applyCatalogFilter);
+  applyCatalogFilter();
+
+  // "Add layer" action (mock) — creates a new layer + legend row
+  document.getElementById('confirmAdd').addEventListener('click', ()=>{
+    const name = document.getElementById('cfgName').value.trim() || 'New layer';
+    const geom = document.getElementById('cfgGeom').value;
+    const colorChoice = document.getElementById('cfgColor').value;
+    const color = colorFromChoice(colorChoice);
+    let key = slugify(name);
+    if(LAYERS[key]) key = `${key}_${Date.now().toString().slice(-4)}`;
+
+    const layer = L.layerGroup();
+    if(geom.toLowerCase().includes('polygon')){
+      addMockPolygons(layer, color);
+    }else{
+      addMockPoints(layer, color);
+    }
+    LAYERS[key] = layer;
+    layer.addTo(map);
+
+    const subtext = geom.toLowerCase().includes('polygon') ? 'Polygons · added from catalog' :
+      geom.toLowerCase().includes('heatmap') ? 'Heatmap · added from catalog' :
+      'Points · added from catalog';
+    addLayerRow(key, name, color, subtext);
+    addLegendRow(key, name, color, true);
+
+    closeModal();
+  });
+
+  // Layer search filter
+  const layerSearch = document.getElementById('layerSearch');
+  layerSearch.addEventListener('input', ()=>{
+    const q = layerSearch.value.toLowerCase().trim();
+    const rows = Array.from(document.querySelectorAll('.layerRow'));
+    if(!q){
+      rows.forEach(row=>{ row.style.display = ''; });
+      return;
+    }
+    const hasLayerMatch = rows.some(row=>row.innerText.toLowerCase().includes(q));
+    rows.forEach(row=>{
+      if(hasLayerMatch){
+        const txt = row.innerText.toLowerCase();
+        row.style.display = txt.includes(q) ? '' : 'none';
+      }else{
+        row.style.display = '';
+      }
+    });
+    if(!q) return;
+    const parts = q.split(',').map(p=>normalizeKey(p));
+    const cityKey = parts[0];
+    const stateKey = parts[1];
+    const cityStateEntry = (cityKey && stateKey) ? cityStateIndex.get(`${cityKey}|${stateKey}`) : null;
+    const cityEntry = cityKey ? cityIndex.get(cityKey) : null;
+    const stateEntry = stateKey ? stateIndex.get(stateKey) : stateIndex.get(cityKey);
+    const entry = cityStateEntry || cityEntry || stateEntry;
+    if(entry && entry.count){
+      const lat = entry.latSum / entry.count;
+      const lng = entry.lngSum / entry.count;
+      map.setView([lat, lng], 9, { animate:true });
+    }
+  });
+
+  // Chat mock
+  const chatBody = document.getElementById('chatBody');
+  document.getElementById('chatSend').addEventListener('click', ()=>{
+    const input = document.getElementById('chatText');
+    const q = input.value.trim();
+    if(!q) return;
+    const b1 = document.createElement('div');
+    b1.className = 'bubble';
+    b1.innerHTML = `<strong>You:</strong> ${q}`;
+    chatBody.prepend(b1);
+
+    const b2 = document.createElement('div');
+    b2.className = 'bubble';
+    b2.innerHTML = `<strong>Answer (mock):</strong> Filtering to markets where coupon reliance is above baseline and competitor density is high. (Wire this to DLVE + 3rd party joins.)`;
+    chatBody.prepend(b2);
+
+    input.value = '';
+  });
+
+  // Chat collapse
+  const chat = document.getElementById('chat');
+  const chatCollapse = document.getElementById('chatCollapse');
+  let chatCollapsed = true;
+  document.getElementById('chatBody').style.display = 'none';
+  document.getElementById('chatInput').style.display = 'none';
+  chatCollapse.addEventListener('click', ()=>{
+    chatCollapsed = !chatCollapsed;
+    document.getElementById('chatBody').style.display = chatCollapsed ? 'none' : '';
+    document.getElementById('chatInput').style.display = chatCollapsed ? 'none' : '';
+  });
+</script>
+</body>
+</html>
